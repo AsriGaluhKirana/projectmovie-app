@@ -1,0 +1,159 @@
+import { useState, useEffect } from "react";
+import Form from "react-bootstrap/Form";
+import Button from "react-bootstrap/Button";
+import Card from "react-bootstrap/Card";
+import Select from "react-select";
+
+
+const DEFAULT = {
+  Poster: '',
+  Title: '',
+  Type: '', 
+  Year: '',
+  imdbID: ''
+}
+
+function App() {
+  const [listMovie, setListMovie] = useState(DEFAULT)
+  const [result, setResult] = useState([{
+    film: "",
+    ticketAmount: 0,
+    date: "",
+  }]);
+
+  const handleSave = () => {
+    console.log(result);
+  };
+
+  useEffect(() => {
+    const fetchFilmData = async (searchQuery) => {
+      try {
+        const response = await fetch(
+          `http://www.omdbapi.com/?s=${searchQuery}&apikey=d592fe1a`
+        );
+        const data = await response.json();
+        if (data.Search) {
+          setListMovie(data.Search);
+        } else {
+          setListMovie([]);
+        }
+      } catch (error) {
+        console.error("Error fetching data: ", error);
+      }
+    };
+
+    if (result.film !== "") {
+      fetchFilmData(result.film);
+    }
+  }, [result.film]);
+
+  const options = listMovie.map((film) => ({
+    value: film.Title,
+    label: film.Title,
+  }));
+
+  console.log('HERE',listMovie)
+
+  return (
+    <div className="d-flex row-cols-2 gap-3 p-5 m-5">
+      <div className="">
+        <Card>
+          <Card.Body className="shadow-sm">
+            <h1 className="">Ticket Reservations</h1>
+            <p className="">(Booking movie tickets)</p>
+
+            <Form>
+              <div className="d-flex gap-5 mt-5">
+                <Form.Group className="w-50" controlId="formGroupSearchFilm">
+                  <Form.Label className="flex">Search Film</Form.Label>
+                  <Select
+                    value={result.film}
+                    onChange={(selectedOption) =>
+                      setResult({ ...result, film: selectedOption.value })
+                    }
+                    options={options} // Pass the options array to the Select component
+                    placeholder="Film"
+                  />
+                </Form.Group>
+                <Form.Group controlId="formGroupAmount">
+                  <Form.Label className="flex">Tickets Amount</Form.Label>
+                  <Form.Control
+                    type="number"
+                    placeholder="Amount of tickets"
+                    min="0"
+                    value={result.ticketAmount || 0}
+                    onChange={(e) =>
+                      setResult({
+                        ...result,
+                        ticketAmount: e.target.valueAsNumber,
+                      })
+                    }
+                  />
+                </Form.Group>
+                <Form.Group controlId="formGroupDate">
+                  <Form.Label className="flex">Date</Form.Label>
+                  <Form.Control
+                    type="date"
+                    placeholder=""
+                    value={result.date}
+                    onChange={(e) =>
+                      setResult({ ...result, date: e.target.value })
+                    }
+                  />
+                </Form.Group>
+              </div>
+              <div className="d-flex justify-content-end mb-4 mt-4">
+                <Button variant="success" onClick={handleSave}>
+                  Save
+                </Button>
+              </div>
+
+              <h5>HTM :</h5>
+              <div className="d-flex gap-5">
+                <Form.Group controlId="exampleForm.ControlInput1">
+                  <Form.Label className="mr-10">Senin - Kamis</Form.Label>
+                  <Form.Control
+                    type="text"
+                    placeholder=""
+                    readOnly
+                    defaultValue="30000"
+                  />
+                </Form.Group>
+                <Form.Group controlId="exampleForm.ControlInput1">
+                  <Form.Label>Jumat - Sabtu</Form.Label>
+                  <Form.Control
+                    type="text"
+                    placeholder=""
+                    readOnly
+                    defaultValue="50000"
+                  />
+                </Form.Group>
+                <Form.Group controlId="exampleForm.ControlInput1">
+                  <Form.Label>Minggu</Form.Label>
+                  <Form.Control
+                    type="text"
+                    placeholder=""
+                    readOnly
+                    defaultValue="60000"
+                  />
+                </Form.Group>
+              </div>
+            </Form>
+          </Card.Body>
+        </Card>
+      </div>
+      <Card>
+        <Card.Body className="shadow-sm">
+          <div className="">
+            <div className="">
+              <h1>Ticket Details</h1>
+              <p>(E-tickets movie details)</p>
+            </div>
+          </div>
+        </Card.Body>
+      </Card>
+    </div>
+  );
+}
+
+export default App;
