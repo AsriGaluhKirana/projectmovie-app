@@ -3,31 +3,53 @@ import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 import Card from "react-bootstrap/Card";
 import { FormControl } from "react-bootstrap";
+import React from "react";
 
-const DEFAULT_RESULT = {
+interface Result {
+  film: string;
+  ticketAmount: number;
+  date: string;
+  searchResult: any[]; // Mengganti tipe searchResult dengan array generic
+  ticketPrice?: number; // Menambahkan opsi ticketPrice
+}
+
+interface SavedResult {
+  film: string;
+  ticketAmount: number;
+  date: string;
+  ticketPrice?: number;
+}
+
+interface HTM {
+  type1: number;
+  type2: number;
+  type3: number;
+}
+
+const DEFAULT_RESULT: Result = {
   film: "",
   ticketAmount: 0,
   date: "",
-  searchResult: [], // Menambahkan searchResult ke DEFAULT_RESULT
+  searchResult: [],
 };
 
-const DEFAULT_HTM = {
+const DEFAULT_HTM: HTM = {
   type1: 35000,
   type2: 50000,
   type3: 60000,
 };
 
-function App() {
-  const [result, setResult] = useState(DEFAULT_RESULT);
-  const [savedResult, setSavedResult] = useState([{}]);
-  const [htm, setHtm] = useState(DEFAULT_HTM);
+//JSX.Element adalah tipe khusus dalam TypeScript yang digunakan untuk mewakili elemen-elemen yang dihasilkan oleh JSX (JavaScript XML) di React. 
+function App(): JSX.Element { 
+  const [result, setResult] = useState<Result>(DEFAULT_RESULT);
+  const [savedResult, setSavedResult] = useState<SavedResult[]>([]);
+  const [htm, setHtm] = useState<HTM>(DEFAULT_HTM);
 
   const handleSave = () => {
-    const newSavedResult = {
+    const newSavedResult: SavedResult = {
       film: result.film,
       ticketAmount: result.ticketAmount,
       date: result.date,
-      day: result.day,
     };
 
     // Mendapatkan indeks hari (0 untuk Minggu, 1 untuk Senin, dst.)
@@ -45,21 +67,19 @@ function App() {
 
     newSavedResult.ticketPrice = ticketPrice; // Menambahkan harga tiket ke objek yang disimpan
     setSavedResult([...savedResult, newSavedResult]);
-    console.log("Saved Results: ", savedResult);
   };
 
-  const handleFilmSelect = (e) => {
+  const handleFilmSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedFilm = result.searchResult.find(
       (film) => film.Title === e.target.value
     );
-    setResult({ ...result, film: selectedFilm.Title });
+    setResult({ ...result, film: selectedFilm?.Title || "" });
   };
 
-  const handleFilmSearch = (e) => {
+  const handleFilmSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const searchQuery = e.target.value;
     setResult({ ...result, film: searchQuery });
   };
-
 
   const totalTicketSold = savedResult.reduce((total, result) => {
     return total + (result.ticketAmount || 0);
@@ -70,7 +90,7 @@ function App() {
   }, 0);
 
   useEffect(() => {
-    const fetchFilmData = async (searchQuery) => {
+    const fetchFilmData = async (searchQuery: string) => {
       try {
         const response = await fetch(
           `http://www.omdbapi.com/?s=${searchQuery}&apikey=d592fe1a`
@@ -139,7 +159,7 @@ function App() {
                       onChange={(e) =>
                         setResult({
                           ...result,
-                          ticketAmount: e.target.valueAsNumber,
+                          ticketAmount: parseInt(e.target.value), // Menggunakan parseInt untuk mengonversi ke number
                         })
                       }
                     />
@@ -173,7 +193,7 @@ function App() {
                       onChange={(e) =>
                         setHtm({
                           ...htm,
-                          type1: e.target.valueAsNumber,
+                          type1: parseInt(e.target.value),
                         })
                       }
                     />
@@ -187,7 +207,7 @@ function App() {
                       onChange={(e) =>
                         setHtm({
                           ...htm,
-                          type2: e.target.valueAsNumber,
+                          type2: parseInt(e.target.value),
                         })
                       }
                     />
@@ -201,7 +221,7 @@ function App() {
                       onChange={(e) =>
                         setHtm({
                           ...htm,
-                          type3: e.target.valueAsNumber,
+                          type3: parseInt(e.target.value),
                         })
                       }
                     />
